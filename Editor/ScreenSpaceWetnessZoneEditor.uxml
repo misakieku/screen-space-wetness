@@ -19,7 +19,7 @@
                         <engine:DataBinding property="value" data-source-path="intensity" />
                     </Bindings>
                 </engine:Slider>
-                <engine:Label text="Bound" class="header" />
+                <engine:Label text="Bound" class="sub-header" />
                 <engine:VisualElement class="property-container" style="flex-grow: 1;">
                     <engine:Vector3Field label="Center" name="center-vector3">
                         <Bindings>
@@ -42,12 +42,8 @@
         <engine:VisualElement name="appearance-group">
             <engine:Label text="Appearance" class="header" />
             <engine:VisualElement class="property-container">
-                <engine:Label text="Color" class="header" style="margin-top: 4px; margin-bottom: 3px;" />
-                <engine:VisualElement class="property-container" style="flex-grow: 1;">
-                    <editor:ColorField label="Water Color" value="#338C8C00" />
-                    <editor:ObjectField label="Water Color Map" type="UnityEngine.Texture2D, UnityEngine.CoreModule" />
-                </engine:VisualElement>
-                <engine:Label text="Flow" class="header" style="margin-top: 4px; margin-bottom: 3px;" />
+                <editor:ColorField label="Water Color" value="#338C8C00" class="sub-header" />
+                <engine:Label text="Flow" class="sub-header" style="margin-top: 4px; margin-bottom: 3px;" />
                 <engine:VisualElement class="property-container" style="flex-grow: 1;">
                     <engine:Vector2Field label="Flow Direction" value="-1,0">
                         <Bindings>
@@ -60,13 +56,12 @@
                             <engine:DataBinding property="value" data-source-path="normalStrength" />
                         </Bindings>
                     </engine:Slider>
-                    <engine:Label text="First Normal" class="header" style="margin-top: 4px; margin-bottom: 3px;" />
+                    <editor:ObjectField label="First Normal" type="UnityEngine.Texture2D, UnityEngine.CoreModule" allow-scene-objects="false" class="sub-header" style="-unity-font-style: bold; margin-top: 4px; margin-bottom: 3px;">
+                        <Bindings>
+                            <engine:DataBinding property="value" data-source-path="firstNormalTexture" />
+                        </Bindings>
+                    </editor:ObjectField>
                     <engine:VisualElement class="property-container" style="flex-grow: 1;">
-                        <editor:ObjectField label="Texture" type="UnityEngine.Texture2D, UnityEngine.CoreModule" allow-scene-objects="false">
-                            <Bindings>
-                                <engine:DataBinding property="value" data-source-path="firstNormalTexture" />
-                            </Bindings>
-                        </editor:ObjectField>
                         <engine:FloatField label="Scale" value="1">
                             <Bindings>
                                 <engine:DataBinding property="value" data-source-path="normalParams.x" />
@@ -78,13 +73,12 @@
                             </Bindings>
                         </engine:FloatField>
                     </engine:VisualElement>
-                    <engine:Label text="Second Normal" class="header" style="margin-top: 4px; margin-bottom: 3px;" />
+                    <editor:ObjectField label="Second Normal" type="UnityEngine.Texture2D, UnityEngine.CoreModule" allow-scene-objects="false" class="sub-header">
+                        <Bindings>
+                            <engine:DataBinding property="value" data-source-path="secondNormalTexture" />
+                        </Bindings>
+                    </editor:ObjectField>
                     <engine:VisualElement class="property-container" style="flex-grow: 1;">
-                        <editor:ObjectField label="Texture" type="UnityEngine.Texture2D, UnityEngine.CoreModule" allow-scene-objects="false">
-                            <Bindings>
-                                <engine:DataBinding property="value" data-source-path="secondNormalTexture" />
-                            </Bindings>
-                        </editor:ObjectField>
                         <engine:FloatField label="Scale" value="1">
                             <Bindings>
                                 <engine:DataBinding property="value" data-source-path="normalParams.z" />
@@ -97,13 +91,12 @@
                         </engine:FloatField>
                     </engine:VisualElement>
                 </engine:VisualElement>
-                <engine:Label text="Smoothness" class="header" style="margin-top: 4px; margin-bottom: 3px;" />
+                <engine:Slider label="Smoothness" value="0.95" high-value="1" show-input-field="true" class="sub-header">
+                    <Bindings>
+                        <engine:DataBinding property="value" data-source-path="waterSmoothness" />
+                    </Bindings>
+                </engine:Slider>
                 <engine:VisualElement class="property-container" style="flex-grow: 1;">
-                    <engine:Slider label="Value" value="0.95" high-value="1" show-input-field="true">
-                        <Bindings>
-                            <engine:DataBinding property="value" data-source-path="waterSmoothness" />
-                        </Bindings>
-                    </engine:Slider>
                     <engine:Vector4Field label="Noise Scale &amp; Offset">
                         <Bindings>
                             <engine:DataBinding property="value" data-source-path="noiseScaleOffset" />
@@ -140,11 +133,6 @@
                         <engine:DataBinding property="value" data-source-path="bias.y" />
                     </Bindings>
                 </engine:Slider>
-                <editor:ObjectField label="Noise Texture" type="UnityEngine.Texture3D, UnityEngine.CoreModule" allow-scene-objects="false">
-                    <Bindings>
-                        <engine:DataBinding property="value" data-source-path="rotationNoiseTexture" />
-                    </Bindings>
-                </editor:ObjectField>
             </engine:VisualElement>
         </engine:VisualElement>
     </engine:VisualElement>

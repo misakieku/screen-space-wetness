@@ -12,12 +12,13 @@ namespace Misaki.ScreenSpaceWetness
         public float intensity = 1.0f;
 
         public Vector3 center;
-        public Vector2 size = new Vector2(15, 15);
+        public Vector2 size = new(15, 15);
 
         public DepthOnlyRenderer depthRenderer;
         public ScreenSpaceWetnessPassHelper wetnessPassHelper;
 
         private Material _wetnessMaterial;
+        private Material _maskMaterial;
 
         public Texture2D firstNormalTexture;
         public Texture2D secondNormalTexture;
@@ -32,7 +33,6 @@ namespace Misaki.ScreenSpaceWetness
 
         public ShadowQuality quality = ShadowQuality.Medium;
         public Vector2 bias = new(0.01f, 0.1f);
-        public Texture3D rotationNoiseTexture;
 
         private void OnEnable()
         {
@@ -58,16 +58,24 @@ namespace Misaki.ScreenSpaceWetness
                 _wetnessMaterial = CoreUtils.CreateEngineMaterial("FullScreen/ScreenSpaceWetness");
             }
 
+            if (_maskMaterial == null)
+            {
+                _maskMaterial = CoreUtils.CreateEngineMaterial("Renderers/WetnessMask");
+            }
+
             CreateRenderTarget(quality);
             UpdateCameraProperty(renderMode);
 
-            wetnessPassHelper.AssignMaterial(_wetnessMaterial);
+            wetnessPassHelper.AssignMaterial(_wetnessMaterial, _maskMaterial);
             wetnessPassHelper.ApplyRenderMode(renderMode);
         }
 
         private void OnDestroy()
         {
             depthRenderer.Dispose();
+
+            CoreUtils.Destroy(_wetnessMaterial);
+            CoreUtils.Destroy(_maskMaterial);
         }
 
         private void Update()
@@ -111,9 +119,7 @@ namespace Misaki.ScreenSpaceWetness
             _wetnessMaterial.SetVector("_noiseScaleOffset", noiseScaleOffset);
             _wetnessMaterial.SetVector("_noiseMinMax", noiseMinMax);
 
-
             _wetnessMaterial.SetTexture("_shadowMap", depthRenderer.renderTarget);
-            _wetnessMaterial.SetTexture("_samplingNoiseTexture", rotationNoiseTexture);
 
             _wetnessMaterial.SetVector("_shadowMap_TexelSize", texelSize);
             _wetnessMaterial.SetVector("_bias", bias);

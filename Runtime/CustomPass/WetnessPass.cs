@@ -29,7 +29,7 @@ namespace Misaki.ScreenSpaceWetness
                 return;
 
             CoreUtils.SetRenderTarget(ctx.cmd, _tmpNormalBuffer, ctx.cameraDepthBuffer);
-            CoreUtils.DrawFullScreen(ctx.cmd, wetnessMaterial, shaderPassId: materialsPassId);
+            CoreUtils.DrawFullScreen(ctx.cmd, wetnessMaterial);
             CustomPassUtils.Copy(ctx, _tmpNormalBuffer, ctx.cameraNormalBuffer);
         }
 

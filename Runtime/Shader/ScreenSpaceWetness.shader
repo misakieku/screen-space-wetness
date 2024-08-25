@@ -63,6 +63,8 @@ Shader "FullScreen/ScreenSpaceWetness"
 
     float _intensity;
 
+    TEXTURE2D_X(_maskBuffer);
+
     float4x4 _rainMatrix;
     float3 _rainDirection;
 
@@ -85,15 +87,20 @@ Shader "FullScreen/ScreenSpaceWetness"
     float2 _noiseMinMax;
     
     TEXTURE2D(_shadowMap);
-    SAMPLER(sampler_shadowMap);
-    TEXTURE3D(_samplingNoiseTexture);
-    SAMPLER(sampler_samplingNoiseTexture);
 
     float4 _shadowMap_TexelSize;
     float2 _bias;
 
     #define DEPTH_BIAS _bias.x
     #define NORMAL_BIAS _bias.y
+
+    float2 Random2(float2 uv)
+    {
+        float n = dot(uv, float2(12.9898, 78.233));
+        float randomX = frac(sin(n) * 43758.5453);
+        float randomY = frac(sin(n + 1.0) * 43758.5453);
+        return float2(randomX, randomY);
+    }
 
     float3 NormalBlend(float3 A, float3 B)
     {
@@ -136,7 +143,7 @@ Shader "FullScreen/ScreenSpaceWetness"
 
     float ComputeMask(PositionInputs posInput, float3 positionAbsWS, float3 normalWS)
     {
-        float mask = 1.0f;
+        float mask = SAMPLE_TEXTURE2D_X_LOD(_maskBuffer, s_linear_clamp_sampler, posInput.positionNDC.xy, 0).r;
 
         int isNotSky = 1 - IsSky(posInput.positionNDC);
         mask *= isNotSky;
@@ -144,7 +151,7 @@ Shader "FullScreen/ScreenSpaceWetness"
         float4 positionTC = mul(_rainMatrix, float4(positionAbsWS + NORMAL_BIAS * normalWS, 1.0f));
         float3 coord = positionTC.xyz / positionTC.w;
 
-        float2 rotation = SAMPLE_TEXTURE3D(_samplingNoiseTexture, sampler_samplingNoiseTexture, float3(posInput.positionNDC.xy, 0.0f) * 100.0f).xy;
+        float2 rotation = Random2(posInput.positionNDC.xy);
         rotation = rotation * 2 - 1;
 
         float NdotL = saturate(dot(normalWS, _rainDirection));
@@ -170,7 +177,7 @@ Shader "FullScreen/ScreenSpaceWetness"
                     rotation.x * offset.x - rotation.y * offset.y,
                     rotation.y * offset.x + rotation.x * offset.y
                     );
-                float sampleDepth = SAMPLE_TEXTURE2D(_shadowMap, sampler_shadowMap, uv + offset * kernalSize).x;
+                float sampleDepth = SAMPLE_TEXTURE2D(_shadowMap, s_linear_clamp_sampler, uv + offset * kernalSize).x;
                 sum += sampleDepth > coord.z + bias ? 0 : 1;
             }
 
@@ -186,7 +193,7 @@ Shader "FullScreen/ScreenSpaceWetness"
                         rotation.x * offset.x - rotation.y * offset.y,
                         rotation.y * offset.x + rotation.x * offset.y
                         );
-                    float sampleDepth = SAMPLE_TEXTURE2D(_shadowMap, sampler_shadowMap, uv + offset * kernalSize).x;
+                    float sampleDepth = SAMPLE_TEXTURE2D(_shadowMap, s_linear_clamp_sampler, uv + offset * kernalSize).x;
                     sum += sampleDepth > coord.z + bias ? 0 : 1;
                 }
                 shadow = sum / N_SAMPLE;
