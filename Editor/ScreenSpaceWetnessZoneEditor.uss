@@ -1,0 +1,9 @@
+.header {
+    margin-top: 8px;
+    margin-bottom: 6px;
+    -unity-font-style: bold;
+}
+
+.property-container {
+    padding-left: 12px;
+}

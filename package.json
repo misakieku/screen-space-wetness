@@ -1,0 +1,16 @@
+{
+  "name": "com.misaki.screen-space-wetness",
+  "version": "1.0.0",
+  "displayName": "Screen Space Wetness",
+  "description": "A screen space wetness effect that can correctly identify indoor and outdoor",
+  "keywords": [
+    "ScreenSpace",
+    "Rain",
+    "Wetness"
+  ],
+  "author": {
+    "name": "Misaki",
+    "email": "misaki_39@outlook.com",
+    "url": "https://github.com/misakieku"
+  }
+}

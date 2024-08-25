@@ -1,0 +1,19 @@
+{
+    "name": "ScreenSpaceWetness.Editor",
+    "rootNamespace": "Misaki.ScreenSpaceWetness.Editor",
+    "references": [
+        "GUID:49bc4db2a563a6c47a4289702427df17",
+        "GUID:d8b63aba1907145bea998dd612889d6b"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

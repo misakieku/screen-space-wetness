@@ -1,0 +1,151 @@
+<engine:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:engine="UnityEngine.UIElements" xmlns:editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="True">
+    <Style src="project://database/Packages/com.misaki.screen-space-wetness/Editor/ScreenSpaceWetnessZoneEditor.uss?fileID=7433441132597879392&amp;guid=5eacc8b7aee04a544b8ca67652c6a3f4&amp;type=3#ScreenSpaceWetnessZoneEditor" />
+    <engine:VisualElement data-source-type="Misaki.ScreenSpaceWetness.ScreenSpaceWetnessZone, ScreenSpaceWetness" style="flex-grow: 1;">
+        <engine:VisualElement name="general-group">
+            <engine:Label text="General" class="header" />
+            <engine:VisualElement class="property-container">
+                <engine:EnumField label="Render Mode" value="Wetness" type="Misaki.ScreenSpaceWetness.RenderMode, ScreenSpaceWetness" name="render-mode-enum">
+                    <Bindings>
+                        <engine:DataBinding property="value" data-source-path="renderMode" />
+                    </Bindings>
+                </engine:EnumField>
+                <editor:LayerMaskField label="Layer Mask" value="1">
+                    <Bindings>
+                        <engine:DataBinding property="value" data-source-path="layerMask" />
+                    </Bindings>
+                </editor:LayerMaskField>
+                <engine:Slider label="Intensity" value="42" high-value="1" show-input-field="true" fill="true">
+                    <Bindings>
+                        <engine:DataBinding property="value" data-source-path="intensity" />
+                    </Bindings>
+                </engine:Slider>
+                <engine:Label text="Bound" class="header" />
+                <engine:VisualElement class="property-container" style="flex-grow: 1;">
+                    <engine:Vector3Field label="Center" name="center-vector3">
+                        <Bindings>
+                            <engine:DataBinding property="value" data-source-path="center" />
+                        </Bindings>
+                    </engine:Vector3Field>
+                    <engine:FloatField label="Half Size" value="15" name="half-size-float">
+                        <Bindings>
+                            <engine:DataBinding property="value" data-source-path="size.x" />
+                        </Bindings>
+                    </engine:FloatField>
+                    <engine:FloatField label="Half Length" value="15" name="half-length-float">
+                        <Bindings>
+                            <engine:DataBinding property="value" data-source-path="size.y" />
+                        </Bindings>
+                    </engine:FloatField>
+                </engine:VisualElement>
+            </engine:VisualElement>
+        </engine:VisualElement>
+        <engine:VisualElement name="appearance-group">
+            <engine:Label text="Appearance" class="header" />
+            <engine:VisualElement class="property-container">
+                <engine:Label text="Color" class="header" style="margin-top: 4px; margin-bottom: 3px;" />
+                <engine:VisualElement class="property-container" style="flex-grow: 1;">
+                    <editor:ColorField label="Water Color" value="#338C8C00" />
+                    <editor:ObjectField label="Water Color Map" type="UnityEngine.Texture2D, UnityEngine.CoreModule" />
+                </engine:VisualElement>
+                <engine:Label text="Flow" class="header" style="margin-top: 4px; margin-bottom: 3px;" />
+                <engine:VisualElement class="property-container" style="flex-grow: 1;">
+                    <engine:Vector2Field label="Flow Direction" value="-1,0">
+                        <Bindings>
+                            <engine:DataBinding property="value" data-source-path="flowDirection" />
+                        </Bindings>
+                    </engine:Vector2Field>
+                    <editor:ObjectField label="Flow Map" type="UnityEngine.Texture2D, UnityEngine.CoreModule" allow-scene-objects="false" />
+                    <engine:Slider label="Normal Strength" value="0.01" high-value="1" show-input-field="true">
+                        <Bindings>
+                            <engine:DataBinding property="value" data-source-path="normalStrength" />
+                        </Bindings>
+                    </engine:Slider>
+                    <engine:Label text="First Normal" class="header" style="margin-top: 4px; margin-bottom: 3px;" />
+                    <engine:VisualElement class="property-container" style="flex-grow: 1;">
+                        <editor:ObjectField label="Texture" type="UnityEngine.Texture2D, UnityEngine.CoreModule" allow-scene-objects="false">
+                            <Bindings>
+                                <engine:DataBinding property="value" data-source-path="firstNormalTexture" />
+                            </Bindings>
+                        </editor:ObjectField>
+                        <engine:FloatField label="Scale" value="1">
+                            <Bindings>
+                                <engine:DataBinding property="value" data-source-path="normalParams.x" />
+                            </Bindings>
+                        </engine:FloatField>
+                        <engine:FloatField label="Scrolling Speed" value="1" readonly="false">
+                            <Bindings>
+                                <engine:DataBinding property="value" data-source-path="normalParams.y" />
+                            </Bindings>
+                        </engine:FloatField>
+                    </engine:VisualElement>
+                    <engine:Label text="Second Normal" class="header" style="margin-top: 4px; margin-bottom: 3px;" />
+                    <engine:VisualElement class="property-container" style="flex-grow: 1;">
+                        <editor:ObjectField label="Texture" type="UnityEngine.Texture2D, UnityEngine.CoreModule" allow-scene-objects="false">
+                            <Bindings>
+                                <engine:DataBinding property="value" data-source-path="secondNormalTexture" />
+                            </Bindings>
+                        </editor:ObjectField>
+                        <engine:FloatField label="Scale" value="1">
+                            <Bindings>
+                                <engine:DataBinding property="value" data-source-path="normalParams.z" />
+                            </Bindings>
+                        </engine:FloatField>
+                        <engine:FloatField label="Scrolling Speed" value="1" readonly="false">
+                            <Bindings>
+                                <engine:DataBinding property="value" data-source-path="normalParams.w" />
+                            </Bindings>
+                        </engine:FloatField>
+                    </engine:VisualElement>
+                </engine:VisualElement>
+                <engine:Label text="Smoothness" class="header" style="margin-top: 4px; margin-bottom: 3px;" />
+                <engine:VisualElement class="property-container" style="flex-grow: 1;">
+                    <engine:Slider label="Value" value="0.95" high-value="1" show-input-field="true">
+                        <Bindings>
+                            <engine:DataBinding property="value" data-source-path="waterSmoothness" />
+                        </Bindings>
+                    </engine:Slider>
+                    <engine:Vector4Field label="Noise Scale &amp; Offset">
+                        <Bindings>
+                            <engine:DataBinding property="value" data-source-path="noiseScaleOffset" />
+                        </Bindings>
+                    </engine:Vector4Field>
+                    <engine:Vector2Field label="Noise Min Max">
+                        <Bindings>
+                            <engine:DataBinding property="value" data-source-path="noiseMinMax" />
+                        </Bindings>
+                    </engine:Vector2Field>
+                </engine:VisualElement>
+            </engine:VisualElement>
+        </engine:VisualElement>
+        <engine:VisualElement name="shadow-group">
+            <engine:Label text="Shadow" class="header" />
+            <engine:VisualElement class="property-container">
+                <engine:EnumField label="Quality" value="Medium" type="Misaki.ScreenSpaceWetness.ShadowQuality, ScreenSpaceWetness" name="shadow-quality-enum">
+                    <Bindings>
+                        <engine:DataBinding property="value" data-source-path="quality" />
+                    </Bindings>
+                </engine:EnumField>
+                <engine:EnumField label="Update Mode" value="OnMove" type="Misaki.ScreenSpaceWetness.DepthOnlyRendererUpdateMode, ScreenSpaceWetness" name="shadow-update-enum">
+                    <Bindings>
+                        <engine:DataBinding property="value" data-source-path="depthRenderer.updateMode" />
+                    </Bindings>
+                </engine:EnumField>
+                <engine:Slider label="Depth Bias" value="0.01" high-value="0.1" show-input-field="true">
+                    <Bindings>
+                        <engine:DataBinding property="value" data-source-path="bias.x" />
+                    </Bindings>
+                </engine:Slider>
+                <engine:Slider label="Normal Bias" value="0.1" high-value="0.5" show-input-field="true">
+                    <Bindings>
+                        <engine:DataBinding property="value" data-source-path="bias.y" />
+                    </Bindings>
+                </engine:Slider>
+                <editor:ObjectField label="Noise Texture" type="UnityEngine.Texture3D, UnityEngine.CoreModule" allow-scene-objects="false">
+                    <Bindings>
+                        <engine:DataBinding property="value" data-source-path="rotationNoiseTexture" />
+                    </Bindings>
+                </editor:ObjectField>
+            </engine:VisualElement>
+        </engine:VisualElement>
+    </engine:VisualElement>
+</engine:UXML>
