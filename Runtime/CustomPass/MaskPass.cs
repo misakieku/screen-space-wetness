@@ -9,6 +9,7 @@ namespace Misaki.ScreenSpaceWetness
     {
         public RTHandle _maskBuffer;
 
+        public Material maskMaterial;
         public Material wetnessMaterial;
 
         protected override void Setup(ScriptableRenderContext renderContext, CommandBuffer cmd)
@@ -20,13 +21,13 @@ namespace Misaki.ScreenSpaceWetness
 
         protected override void Execute(CustomPassContext ctx)
         {
-            if (wetnessMaterial == null || overrideMaterial == null || _maskBuffer == null)
+            if (wetnessMaterial == null || _maskBuffer == null)
             {
                 return;
             }
 
             CoreUtils.SetRenderTarget(ctx.cmd, _maskBuffer, ClearFlag.Color);
-            CustomPassUtils.DrawRenderers(ctx, layerMask, overrideMaterial: overrideMaterial);
+            CustomPassUtils.DrawRenderers(ctx, layerMask, overrideMaterial: maskMaterial);
 
             wetnessMaterial.SetTexture("_maskBuffer", _maskBuffer.rt);
         }
@@ -35,6 +36,7 @@ namespace Misaki.ScreenSpaceWetness
         {
             base.Cleanup();
 
+            CoreUtils.Destroy(maskMaterial);
             _maskBuffer.Release();
         }
     }

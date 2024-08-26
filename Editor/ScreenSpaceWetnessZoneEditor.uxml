@@ -42,11 +42,7 @@
         <engine:VisualElement name="appearance-group">
             <engine:Label text="Appearance" class="header" />
             <engine:VisualElement class="property-container">
-                <editor:ColorField label="Water Color" value="#338C8C00" class="sub-header">
-                    <Bindings>
-                        <engine:DataBinding property="value" data-source-path="waterColor" />
-                    </Bindings>
-                </editor:ColorField>
+                <editor:ColorField label="Water Color" value="#338C8C00" class="sub-header" />
                 <engine:Label text="Flow" class="sub-header" style="margin-top: 4px; margin-bottom: 3px;" />
                 <engine:VisualElement class="property-container" style="flex-grow: 1;">
                     <engine:Vector2Field label="Flow Direction" value="-1,0">

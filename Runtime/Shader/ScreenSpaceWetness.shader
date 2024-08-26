@@ -68,8 +68,6 @@ Shader "FullScreen/ScreenSpaceWetness"
     float4x4 _rainMatrix;
     float3 _rainDirection;
 
-    float4 _waterColor;
-
     TEXTURE2D(_waterNormal1);
     SAMPLER(sampler_waterNormal1);
     TEXTURE2D(_waterNormal2);
@@ -204,7 +202,7 @@ Shader "FullScreen/ScreenSpaceWetness"
 
         mask *= shadow;
 
-        float noise = SimpleNoise(positionAbsWS.xz * _noiseScaleOffset.xy + _noiseScaleOffset.zw);
+        float noise = SimpleNoise(positionAbsWS.xz * _noiseScaleOffset.xy + _noiseScaleOffset.zw, 1.0f);
         noise = smoothstep(_noiseMinMax.x, _noiseMinMax.y, noise);
 
         mask *= noise;
@@ -257,33 +255,6 @@ Shader "FullScreen/ScreenSpaceWetness"
         return outNormalBuffer;
     }
 
-    float4 ColorPass(Varyings varyings) : SV_Target
-    {
-        UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(varyings);
-        float depth = LoadCameraDepth(varyings.positionCS.xy);
-        PositionInputs posInput = GetPositionInput(varyings.positionCS.xy, _ScreenSize.zw, depth, UNITY_MATRIX_I_VP, UNITY_MATRIX_V);
-
-        float4 output = 0.0f;
-        output.a = 1.0f;
-        output.rgb = SampleCameraColor(posInput.positionNDC);
-
-        if (_intensity == 0)
-        {
-            return output;
-        }
-
-        float3 positionAbsWS = GetAbsolutePositionWS(posInput.positionWS);
-        NormalData normalData;
-        DecodeFromNormalBuffer(posInput.positionSS, normalData);
-
-        float mask = ComputeMask(posInput, positionAbsWS, normalData.normalWS);
-
-        output.rgb = lerp(output.rgb, output.rgb * _waterColor.rgb, mask * _waterColor.a);
-        //output.rgb = mask * _waterColor.rgb;
-
-        return output;
-    }
-
     float4 DebugPass(Varyings varyings) : SV_Target
     {
         UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(varyings);
@@ -322,20 +293,6 @@ Shader "FullScreen/ScreenSpaceWetness"
 
             HLSLPROGRAM
                 #pragma fragment WetnessPass
-            ENDHLSL
-        }
-
-        Pass
-        {
-            Name "Color"
-
-            ZWrite Off
-            ZTest Off
-            Blend Off
-            Cull Off
-
-            HLSLPROGRAM
-                #pragma fragment ColorPass
             ENDHLSL
         }
 

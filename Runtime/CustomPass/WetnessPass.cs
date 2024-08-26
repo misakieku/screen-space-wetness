@@ -5,9 +5,10 @@ using UnityEngine.Rendering.HighDefinition;
 
 namespace Misaki.ScreenSpaceWetness
 {
-    public class WetnessNormalPass : CustomPass
+    public class WetnessPass : CustomPass
     {
         public Material wetnessMaterial;
+        public int materialsPassId;
 
         private RTHandle _tmpNormalBuffer;
 

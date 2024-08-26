@@ -20,8 +20,6 @@ namespace Misaki.ScreenSpaceWetness
         private Material _wetnessMaterial;
         private Material _maskMaterial;
 
-        public Color waterColor;
-
         public Texture2D firstNormalTexture;
         public Texture2D secondNormalTexture;
 
@@ -109,8 +107,6 @@ namespace Misaki.ScreenSpaceWetness
 
             _wetnessMaterial.SetMatrix("_rainMatrix", VP);
             _wetnessMaterial.SetVector("_rainDirection", -depthRenderer.depthOnlyCamera.transform.forward);
-
-            _wetnessMaterial.SetColor("_waterColor", waterColor);
 
             _wetnessMaterial.SetTexture("_waterNormal1", firstNormalTexture);
             _wetnessMaterial.SetTexture("_waterNormal2", secondNormalTexture);
