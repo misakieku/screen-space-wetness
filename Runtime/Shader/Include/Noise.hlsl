@@ -37,19 +37,19 @@ float ValueNoise (float2 uv)
     return t;
 }
         
-float SimpleNoise(float2 UV, float Scale)
+float SimpleNoise(float2 UV)
 {
     float freq, amp;
     float Out = 0.0f;
     freq = pow(2.0, float(0));
     amp = pow(0.5, float(3-0));
-    Out += ValueNoise(float2(UV.xy*(Scale/freq)))*amp;
+    Out += ValueNoise(float2(UV.xy*(1.0f/freq)))*amp;
     freq = pow(2.0, float(1));
     amp = pow(0.5, float(3-1));
-    Out += ValueNoise(float2(UV.xy*(Scale/freq)))*amp;
+    Out += ValueNoise(float2(UV.xy*(1.0f/freq)))*amp;
     freq = pow(2.0, float(2));
     amp = pow(0.5, float(3-2));
-    Out += ValueNoise(float2(UV.xy*(Scale/freq)))*amp;
+    Out += ValueNoise(float2(UV.xy*(1.0f/freq)))*amp;
 
     return Out;
 }

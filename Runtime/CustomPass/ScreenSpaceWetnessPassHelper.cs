@@ -15,38 +15,85 @@ namespace Misaki.ScreenSpaceWetness
     public class ScreenSpaceWetnessPassHelper : MonoBehaviour
     {
         [SerializeField]
-        private CustomPassVolume _wetnessPassVolume;
+        private CustomPassVolume _wetnessNormalPassVolume;
+        [SerializeField]
+        private CustomPassVolume _wetnessColorPassVolume;
         [SerializeField]
         private CustomPassVolume _debugPassVolume;
 
         private MaskPass _maskPass;
-        private WetnessPass _wetnessPass;
+        private WetnessNormalPass _wetnessNormalPass;
+        private FullScreenCustomPass _wetnessColorPass;
         private FullScreenCustomPass _debugPass;
 
         private void OnEnable()
         {
-            CreateWetnessVolume();
+            CreateWetnessNormalVolume();
+            CreateWetnessColorVolume();
             CreateDebugVolume();
 
             name = "Screen Space Wetness Pass Volume";
         }
 
-        private void CreateWetnessVolume()
+        private void CreateWetnessNormalVolume()
         {
-            if (_wetnessPassVolume == null)
+            if (_wetnessNormalPassVolume == null)
             {
-                _wetnessPassVolume = gameObject.AddComponent<CustomPassVolume>();
-                _wetnessPassVolume.injectionPoint = CustomPassInjectionPoint.AfterOpaqueDepthAndNormal;
+                _wetnessNormalPassVolume = gameObject.AddComponent<CustomPassVolume>();
+                _wetnessNormalPassVolume.injectionPoint = CustomPassInjectionPoint.AfterOpaqueDepthAndNormal;
 
-                _wetnessPass = _wetnessPassVolume.AddPassOfType<WetnessPass>();
-                _wetnessPass.name = "Wetness";
+                CreateMaskPass();
+                CreateNormalPass();
+            }
 
-                _maskPass = _wetnessPassVolume.AddPassOfType<MaskPass>();
+            _wetnessNormalPass ??= _wetnessNormalPassVolume.customPasses.FirstOrDefault(p => p is WetnessNormalPass) as WetnessNormalPass;
+            _maskPass ??= _wetnessNormalPassVolume.customPasses.FirstOrDefault(p => p is MaskPass) as MaskPass;
+
+            if (_maskPass == null)
+            {
+                CreateMaskPass();
+            }
+
+            if (_wetnessNormalPass == null)
+            {
+                CreateNormalPass();
+            }
+
+            void CreateMaskPass()
+            {
+                _maskPass = _wetnessNormalPassVolume.AddPassOfType<MaskPass>();
                 _maskPass.name = "Wetness Mask";
             }
 
-            _wetnessPass ??= _wetnessPassVolume.customPasses.First(p => p is WetnessPass) as WetnessPass;
-            _maskPass ??= _wetnessPassVolume.customPasses.First(p => p is MaskPass) as MaskPass;
+            void CreateNormalPass()
+            {
+                _wetnessNormalPass = _wetnessNormalPassVolume.AddPassOfType<WetnessNormalPass>();
+                _wetnessNormalPass.name = "Wetness Normal";
+            }
+        }
+
+        private void CreateWetnessColorVolume()
+        {
+            if (_wetnessColorPassVolume == null)
+            {
+                _wetnessColorPassVolume = gameObject.AddComponent<CustomPassVolume>();
+                _wetnessColorPassVolume.injectionPoint = CustomPassInjectionPoint.BeforeTransparent;
+
+                CreateColorPass();
+            }
+
+            _wetnessColorPass ??= _wetnessColorPassVolume.customPasses.FirstOrDefault(p => p is FullScreenCustomPass) as FullScreenCustomPass;
+
+            if (_wetnessColorPass == null)
+            {
+                CreateColorPass();
+            }
+
+            void CreateColorPass()
+            {
+                _wetnessColorPass = _wetnessColorPassVolume.AddPassOfType<FullScreenCustomPass>();
+                _wetnessColorPass.name = "Wetness Color";
+            }
         }
 
         private void CreateDebugVolume()
@@ -56,25 +103,42 @@ namespace Misaki.ScreenSpaceWetness
                 _debugPassVolume = gameObject.AddComponent<CustomPassVolume>();
                 _debugPassVolume.injectionPoint = CustomPassInjectionPoint.BeforePostProcess;
 
+                CreateDebugPass();
+            }
+
+            _debugPass ??= _debugPassVolume.customPasses.FirstOrDefault(p => p is FullScreenCustomPass) as FullScreenCustomPass;
+
+            if (_debugPass == null)
+            {
+                CreateDebugPass();
+            }
+
+            void CreateDebugPass()
+            {
                 _debugPass = _debugPassVolume.AddPassOfType<FullScreenCustomPass>();
                 _debugPass.name = "Wetness Debug";
             }
-
-            _debugPass ??= _debugPassVolume.customPasses.First(p => p is FullScreenCustomPass) as FullScreenCustomPass;
         }
 
         public void AssignMaterial(Material wetnessMaterial, Material maskMaterial)
         {
-            if (_wetnessPass == null || _maskPass == null)
+            if (_wetnessNormalPass == null || _maskPass == null)
             {
-                CreateWetnessVolume();
+                CreateWetnessNormalVolume();
             }
 
-            _wetnessPass.wetnessMaterial = wetnessMaterial;
-            _wetnessPass.materialsPassId = 0;
+            _wetnessNormalPass.wetnessMaterial = wetnessMaterial;
 
             _maskPass.wetnessMaterial = wetnessMaterial;
-            _maskPass.maskMaterial = maskMaterial;
+            _maskPass.overrideMaterial = maskMaterial;
+
+            if (_wetnessColorPass == null)
+            {
+                CreateWetnessColorVolume();
+            }
+
+            _wetnessColorPass.fullscreenPassMaterial = wetnessMaterial;
+            _wetnessColorPass.materialPassName = "Color";
 
             if (_debugPass == null)
             {
@@ -90,15 +154,18 @@ namespace Misaki.ScreenSpaceWetness
             switch (renderMode)
             {
                 case RenderMode.None:
-                    _wetnessPassVolume.enabled = false;
+                    _wetnessNormalPassVolume.enabled = false;
+                    _wetnessColorPassVolume.enabled = false;
                     _debugPassVolume.enabled = false;
                     break;
                 case RenderMode.Wetness:
-                    _wetnessPassVolume.enabled = true;
+                    _wetnessNormalPassVolume.enabled = true;
+                    _wetnessColorPassVolume.enabled = true;
                     _debugPassVolume.enabled = false;
                     break;
                 case RenderMode.Debug:
-                    _wetnessPassVolume.enabled = false;
+                    _wetnessNormalPassVolume.enabled = true;
+                    _wetnessColorPassVolume.enabled = false;
                     _debugPassVolume.enabled = true;
                     break;
             }
