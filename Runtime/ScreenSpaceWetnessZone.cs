@@ -11,6 +11,9 @@ namespace Misaki.ScreenSpaceWetness
         public int layerMask = 1;
         public float intensity = 1.0f;
 
+        public Vector4 noiseScaleOffset = new(1.0f, 1.0f, 0.0f, 0.0f);
+        public Vector2 noiseMinMax = new(0.0f, 1.0f);
+
         public Vector3 center;
         public Vector2 size = new(15, 15);
 
@@ -29,9 +32,10 @@ namespace Misaki.ScreenSpaceWetness
         public float normalStrength = 0.1f;
         public Vector2 flowDirection = Vector2.left;
 
+        public Texture2DArray rippleNormalArray;
+        public Vector4 rippleParams = new Vector4(4.0f, 3.0f, 16.0f, 0.1f);
+
         public float waterSmoothness = 0.95f;
-        public Vector4 noiseScaleOffset = new(1.0f, 1.0f, 0.0f, 0.0f);
-        public Vector2 noiseMinMax = new(0.0f, 1.0f);
 
         public ShadowQuality quality = ShadowQuality.Medium;
         public Vector2 bias = new(0.01f, 0.1f);
@@ -107,6 +111,9 @@ namespace Misaki.ScreenSpaceWetness
 
             _wetnessMaterial.SetFloat("_intensity", intensity);
 
+            _wetnessMaterial.SetVector("_noiseScaleOffset", noiseScaleOffset);
+            _wetnessMaterial.SetVector("_noiseMinMax", noiseMinMax);
+
             _wetnessMaterial.SetMatrix("_rainMatrix", VP);
             _wetnessMaterial.SetVector("_rainDirection", -depthRenderer.depthOnlyCamera.transform.forward);
 
@@ -119,9 +126,10 @@ namespace Misaki.ScreenSpaceWetness
             _wetnessMaterial.SetFloat("_normalStrength", normalStrength);
             _wetnessMaterial.SetVector("_flowDirection", flowDirection);
 
+            _wetnessMaterial.SetTexture("_rippleNormalArray", rippleNormalArray);
+            _wetnessMaterial.SetVector("_rippleParams", rippleParams);
+
             _wetnessMaterial.SetFloat("_waterSmoothness", waterSmoothness);
-            _wetnessMaterial.SetVector("_noiseScaleOffset", noiseScaleOffset);
-            _wetnessMaterial.SetVector("_noiseMinMax", noiseMinMax);
 
             _wetnessMaterial.SetTexture("_shadowMap", depthRenderer.renderTarget);
 

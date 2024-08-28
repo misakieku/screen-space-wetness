@@ -62,6 +62,8 @@ Shader "FullScreen/ScreenSpaceWetness"
     };
 
     float _intensity;
+    float4 _noiseScaleOffset;
+    float2 _noiseMinMax;
 
     TEXTURE2D_X(_maskBuffer);
 
@@ -75,6 +77,16 @@ Shader "FullScreen/ScreenSpaceWetness"
     TEXTURE2D(_waterNormal2);
     SAMPLER(sampler_waterNormal2);
 
+    TEXTURE2D_ARRAY(_rippleNormalArray);
+    SAMPLER(sampler_rippleNormalArray);
+
+    float4 _rippleParams;
+
+    #define RIPPLE_NORMAL_SCALE _rippleParams.x
+    #define RIPPLE_NORMAL2_SCALE _rippleParams.y
+    #define RIPPLE_NORMAL_SPEED _rippleParams.z
+    #define RIPPLE_NORMAL_STRENGTH _rippleParams.w
+
     float4 _normalParams;
     float _normalStrength;
     float2 _flowDirection;
@@ -85,8 +97,6 @@ Shader "FullScreen/ScreenSpaceWetness"
     #define WATER_NORMAL_2_SPEED _normalParams.w
 
     float _waterSmoothness;
-    float4 _noiseScaleOffset;
-    float2 _noiseMinMax;
     
     TEXTURE2D(_shadowMap);
 
@@ -114,36 +124,22 @@ Shader "FullScreen/ScreenSpaceWetness"
         return float3(In.rg * Strength, lerp(1, In.b, saturate(Strength)));
     }
 
-    float4 Triplanar(Texture2D tex, SamplerState samplerTex, float3 positionWS, float3 normalWS, float tile, float blend)
+    float2 RotateRadians(float2 UV, float2 Center, float Rotation)
     {
-        float3 Node_UV = positionWS * tile;
-        float3 Node_Blend = pow(abs(normalWS), blend);
-        Node_Blend /= dot(Node_Blend, 1.0);
-        float4 Node_X = SAMPLE_TEXTURE2D(tex, samplerTex, Node_UV.zy);
-        float4 Node_Y = SAMPLE_TEXTURE2D(tex, samplerTex, Node_UV.xz);
-        float4 Node_Z = SAMPLE_TEXTURE2D(tex, samplerTex, Node_UV.xy);
-        float4 Out = Node_X * Node_Blend.x + Node_Y * Node_Blend.y + Node_Z * Node_Blend.z;
+        UV -= Center;
+        float s = sin(Rotation);
+        float c = cos(Rotation);
+        float2x2 rMatrix = float2x2(c, -s, s, c);
+        rMatrix *= 0.5;
+        rMatrix += 0.5;
+        rMatrix = rMatrix * 2 - 1;
+        UV.xy = mul(UV.xy, rMatrix);
+        UV += Center;
 
-        return Out;
+        return UV;
     }
 
-    float3 TriplanarNormalWS(Texture2D tex, SamplerState samplerTex, float3 positionWS, float3 normalWS, float tile, float blend)
-    {
-        float3 Node_UV = positionWS * tile;
-        float3 Node_Blend = max(pow(abs(normalWS), blend), 0);
-        Node_Blend /= (Node_Blend.x + Node_Blend.y + Node_Blend.z ).xxx;
-        float3 Node_X = UnpackNormal(SAMPLE_TEXTURE2D(tex, samplerTex, Node_UV.zy));
-        float3 Node_Y = UnpackNormal(SAMPLE_TEXTURE2D(tex, samplerTex, Node_UV.xz));
-        float3 Node_Z = UnpackNormal(SAMPLE_TEXTURE2D(tex, samplerTex, Node_UV.xy));
-        Node_X = float3(Node_X.xy + normalWS.zy, abs(Node_X.z) * normalWS.x);
-        Node_Y = float3(Node_Y.xy + normalWS.xz, abs(Node_Y.z) * normalWS.y);
-        Node_Z = float3(Node_Z.xy + normalWS.xy, abs(Node_Z.z) * normalWS.z);
-        float4 Out = float4(normalize(Node_X.zyx * Node_Blend.x + Node_Y.xzy * Node_Blend.y + Node_Z.xyz * Node_Blend.z), 1);
-
-        return Out;
-    }
-
-    float ComputeMask(PositionInputs posInput, float3 positionAbsWS, float3 normalWS)
+    float ComputeWetnessMask(PositionInputs posInput, float3 positionAbsWS, float3 normalWS)
     {
         float mask = SAMPLE_TEXTURE2D_X_LOD(_maskBuffer, s_linear_clamp_sampler, posInput.positionNDC.xy, 0).r;
 
@@ -212,6 +208,48 @@ Shader "FullScreen/ScreenSpaceWetness"
         return saturate(mask * _intensity);
     }
 
+    float3 ComputeWetnessNormal(PositionInputs posInput, float3 positionAbsWS, float3 normalWS)
+    {
+        float3 wetnessNormalWS = 0.0f;
+        float2 uv = frac(positionAbsWS.xz);
+        
+        float3 viewDirection = normalize(GetWorldSpaceNormalizeViewDir(posInput.positionWS));
+        float3 dx = ddx(viewDirection);
+        float3 dy = ddy(viewDirection);
+        float3 worldTangent = normalize(dx - dot(dx, viewDirection) * viewDirection);
+        float3x3 tangentToWorldMatrix = CreateTangentToWorld(normalWS, worldTangent, 1.0f);
+
+        float2 flowDirection = normalize(_flowDirection);
+        float4 normal1 = SAMPLE_TEXTURE2D(_waterNormal1, sampler_waterNormal1, uv * WATER_NORMAL_1_SCALE + _Time.y * WATER_NORMAL_1_SPEED * flowDirection);
+        normal1.rgb = UnpackNormalmapRGorAG(normal1);
+        float4 normal2 = SAMPLE_TEXTURE2D(_waterNormal2, sampler_waterNormal2, uv * WATER_NORMAL_2_SCALE + _Time.y * WATER_NORMAL_2_SPEED * flowDirection);
+        normal2.rgb = UnpackNormalmapRGorAG(normal2);
+
+        float3 waterNormal = NormalStrength(NormalBlend(normal1.rgb, normal2.rgb), _normalStrength);
+
+        float chunkRandomValue1 = Random2(floor(uv * RIPPLE_NORMAL_SCALE + sin(_Time.y)));
+        float chunkRandomRotation1 = floor(chunkRandomValue1 * 4.0f) * PI / 2.0f;
+        float2 rotatedUV1 = RotateRadians(uv, float2(0.5f, 0.5f), chunkRandomRotation1);
+        int slice1 = ((_Time.y + chunkRandomValue1 * 16.0f) * RIPPLE_NORMAL_SPEED) % 16;
+        float4 rippleNormal1 = SAMPLE_TEXTURE2D_ARRAY(_rippleNormalArray, sampler_rippleNormalArray, rotatedUV1 * RIPPLE_NORMAL_SCALE, slice1);
+        rippleNormal1.rgb = NormalStrength(UnpackNormalmapRGorAG(rippleNormal1), RIPPLE_NORMAL_STRENGTH * chunkRandomValue1);
+
+        float chunkRandomValue2 = Random2(floor(uv * RIPPLE_NORMAL2_SCALE + sin(_Time.y)));
+        float chunkRandomRotation2 = floor(chunkRandomValue2 * 4.0f) * PI / 2.0f;
+        float2 rotatedUV2 = RotateRadians(uv, float2(0.5f, 0.5f), chunkRandomRotation2);
+        int slice2 = ((_Time.y + chunkRandomValue2 * 16.0f) * RIPPLE_NORMAL_SPEED) % 16;
+        float4 rippleNormal2 = SAMPLE_TEXTURE2D_ARRAY(_rippleNormalArray, sampler_rippleNormalArray, rotatedUV2 * RIPPLE_NORMAL2_SCALE, slice2);
+        rippleNormal2.rgb = NormalStrength(UnpackNormalmapRGorAG(rippleNormal2), RIPPLE_NORMAL_STRENGTH * chunkRandomValue2);
+
+        float3 rippleNormal = NormalBlend(rippleNormal1.rgb, rippleNormal2.rgb);
+
+        waterNormal = NormalBlend(waterNormal, rippleNormal);
+
+        wetnessNormalWS = normalize(TransformTangentToWorld(waterNormal, tangentToWorldMatrix));
+
+        return wetnessNormalWS;
+    }
+
     float4 WetnessPass(Varyings varyings) : SV_Target
     {
         UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(varyings);
@@ -232,24 +270,10 @@ Shader "FullScreen/ScreenSpaceWetness"
 
         float3 positionAbsWS = GetAbsolutePositionWS(posInput.positionWS);
 
-        float2 flowDirection = normalize(_flowDirection);
-        float4 normal1 = SAMPLE_TEXTURE2D(_waterNormal1, sampler_waterNormal1, positionAbsWS.xz * WATER_NORMAL_1_SCALE + _Time.y * WATER_NORMAL_1_SPEED * flowDirection);
-        normal1.rgb = UnpackNormalmapRGorAG(normal1);
-        float4 normal2 = SAMPLE_TEXTURE2D(_waterNormal2, sampler_waterNormal2, positionAbsWS.xz * WATER_NORMAL_2_SCALE + _Time.y * WATER_NORMAL_2_SPEED * flowDirection);
-        normal2.rgb = UnpackNormalmapRGorAG(normal2);
-        float3 waterNormal = NormalStrength(NormalBlend(normal1, normal2), _normalStrength);
+        float3 wetnessNormalWS = ComputeWetnessNormal(posInput, positionAbsWS, normalData.normalWS);
+        float mask = ComputeWetnessMask(posInput, positionAbsWS, normalData.normalWS);
 
-        float3 viewDirection = normalize(GetWorldSpaceNormalizeViewDir(posInput.positionWS));
-        float3 dx = ddx(viewDirection);
-        float3 dy = ddy(viewDirection);
-        float3 worldTangent = normalize(dx - dot(dx, viewDirection) * viewDirection);
-
-        float3x3 tangentToWorld = CreateTangentToWorld(normalData.normalWS, worldTangent, 1.0f);
-        float3 waterNormalWS = normalize(TransformTangentToWorld(waterNormal, tangentToWorld));
-        
-        float mask = ComputeMask(posInput, positionAbsWS, normalData.normalWS);
-
-        inNormalBuffer.rgb = lerp(normalData.normalWS, waterNormalWS, mask);
+        inNormalBuffer.rgb = lerp(normalData.normalWS, wetnessNormalWS, mask);
         inNormalBuffer.a = lerp(normalData.perceptualRoughness, 1.0f - _waterSmoothness, mask);
         
         EncodeIntoNormalBuffer(inNormalBuffer.rgb, inNormalBuffer.a, outNormalBuffer);
@@ -276,7 +300,7 @@ Shader "FullScreen/ScreenSpaceWetness"
         NormalData normalData;
         DecodeFromNormalBuffer(posInput.positionSS, normalData);
 
-        float mask = ComputeMask(posInput, positionAbsWS, normalData.normalWS);
+        float mask = ComputeWetnessMask(posInput, positionAbsWS, normalData.normalWS);
 
         output.rgb = lerp(output.rgb, output.rgb * _waterColor.rgb, mask * _waterColor.a);
         //output.rgb = mask * _waterColor.rgb;
@@ -301,7 +325,7 @@ Shader "FullScreen/ScreenSpaceWetness"
         NormalData normalData;
         DecodeFromNormalBuffer(posInput.positionSS, normalData);
 
-        output = ComputeMask(posInput, positionAbsWS, normalData.normalWS);
+        output = ComputeWetnessMask(posInput, positionAbsWS, normalData.normalWS);
 
         return output;
     }

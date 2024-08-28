@@ -19,6 +19,20 @@
                         <engine:DataBinding property="value" data-source-path="intensity" />
                     </Bindings>
                 </engine:Slider>
+                <engine:Label text="Variant" class="sub-header" />
+                <engine:VisualElement class="property-container" style="flex-grow: 1;">
+                    <engine:Vector4Field label="Noise Scale &amp; Offset">
+                        <Bindings>
+                            <engine:DataBinding property="value" data-source-path="noiseScaleOffset" />
+                        </Bindings>
+                    </engine:Vector4Field>
+                    <engine:Vector2Field label="Noise Min Max">
+                        <Bindings>
+                            <engine:DataBinding property="value" data-source-path="noiseMinMax" />
+                        </Bindings>
+                    </engine:Vector2Field>
+                    <engine:Vector2Field label="Slop Limit" value="0,1" />
+                </engine:VisualElement>
                 <engine:Label text="Bound" class="sub-header" />
                 <engine:VisualElement class="property-container" style="flex-grow: 1;">
                     <engine:Vector3Field label="Center" name="center-vector3">
@@ -95,23 +109,39 @@
                         </engine:FloatField>
                     </engine:VisualElement>
                 </engine:VisualElement>
+                <engine:Label text="Ripple" class="sub-header" />
+                <engine:VisualElement class="property-container" style="flex-grow: 1;">
+                    <editor:ObjectField label="Riiple Texture Array" type="UnityEngine.Texture2DArray, UnityEngine.CoreModule">
+                        <Bindings>
+                            <engine:DataBinding property="value" data-source-path="rippleNormalArray" />
+                        </Bindings>
+                    </editor:ObjectField>
+                    <engine:FloatField label="First Layer Scale" value="1">
+                        <Bindings>
+                            <engine:DataBinding property="value" data-source-path="rippleParams.x" />
+                        </Bindings>
+                    </engine:FloatField>
+                    <engine:FloatField label="Second Layer Scale" value="1">
+                        <Bindings>
+                            <engine:DataBinding property="value" data-source-path="rippleParams.y" />
+                        </Bindings>
+                    </engine:FloatField>
+                    <engine:FloatField label="Speed" value="16">
+                        <Bindings>
+                            <engine:DataBinding property="value" data-source-path="rippleParams.z" />
+                        </Bindings>
+                    </engine:FloatField>
+                    <engine:Slider label="Strength" value="1" high-value="3" show-input-field="true">
+                        <Bindings>
+                            <engine:DataBinding property="value" data-source-path="rippleParams.w" />
+                        </Bindings>
+                    </engine:Slider>
+                </engine:VisualElement>
                 <engine:Slider label="Smoothness" value="0.95" high-value="1" show-input-field="true" class="sub-header">
                     <Bindings>
                         <engine:DataBinding property="value" data-source-path="waterSmoothness" />
                     </Bindings>
                 </engine:Slider>
-                <engine:VisualElement class="property-container" style="flex-grow: 1;">
-                    <engine:Vector4Field label="Noise Scale &amp; Offset">
-                        <Bindings>
-                            <engine:DataBinding property="value" data-source-path="noiseScaleOffset" />
-                        </Bindings>
-                    </engine:Vector4Field>
-                    <engine:Vector2Field label="Noise Min Max">
-                        <Bindings>
-                            <engine:DataBinding property="value" data-source-path="noiseMinMax" />
-                        </Bindings>
-                    </engine:Vector2Field>
-                </engine:VisualElement>
             </engine:VisualElement>
         </engine:VisualElement>
         <engine:VisualElement name="shadow-group">
