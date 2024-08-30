@@ -31,7 +31,11 @@
                             <engine:DataBinding property="value" data-source-path="noiseMinMax" />
                         </Bindings>
                     </engine:Vector2Field>
-                    <engine:Vector2Field label="Slop Limit" value="0,1" />
+                    <engine:Vector2Field label="Slop Limit" value="0.9,1">
+                        <Bindings>
+                            <engine:DataBinding property="value" data-source-path="noiseSlopeMinMax" binding-mode="ToTarget" />
+                        </Bindings>
+                    </engine:Vector2Field>
                 </engine:VisualElement>
                 <engine:Label text="Bound" class="sub-header" />
                 <engine:VisualElement class="property-container" style="flex-grow: 1;">

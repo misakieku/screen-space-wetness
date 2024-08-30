@@ -63,7 +63,12 @@ Shader "FullScreen/ScreenSpaceWetness"
 
     float _intensity;
     float4 _noiseScaleOffset;
-    float2 _noiseMinMax;
+    float4 _noiseParams;
+
+    #define NOISE_VALUE_MIN _noiseParams.x
+    #define NOISE_VALUE_MAX _noiseParams.y
+    #define NOISE_SLOPE_MIN _noiseParams.z
+    #define NOISE_SLOPE_MAX _noiseParams.w
 
     TEXTURE2D_X(_maskBuffer);
 
@@ -154,7 +159,7 @@ Shader "FullScreen/ScreenSpaceWetness"
 
         float NdotL = saturate(dot(normalWS, _rainDirection));
 
-        mask *= NdotL;
+        //mask *= NdotL;
 
         float sum = 0.0f;
         float shadow = 0.0f;
@@ -200,9 +205,13 @@ Shader "FullScreen/ScreenSpaceWetness"
 
         mask *= shadow;
 
-        float noise = SimpleNoise(positionAbsWS.xz * _noiseScaleOffset.xy + _noiseScaleOffset.zw);
-        noise = smoothstep(_noiseMinMax.x, _noiseMinMax.y, noise);
+        float NdotU = saturate(dot(normalWS, float3(0.0f, 1.0f, 0.0f)));
 
+        float noise = SimpleNoise(positionAbsWS.xz * _noiseScaleOffset.xy + _noiseScaleOffset.zw);
+        noise = smoothstep(NOISE_VALUE_MIN, NOISE_VALUE_MAX, noise);
+        noise = lerp(1.0f, noise, smoothstep(NOISE_SLOPE_MIN, NOISE_SLOPE_MAX, NdotU));
+
+        mask *= smoothstep(0.0f, 0.5f, NdotU);
         mask *= noise;
 
         return saturate(mask * _intensity);
@@ -219,7 +228,9 @@ Shader "FullScreen/ScreenSpaceWetness"
         float3 worldTangent = normalize(dx - dot(dx, viewDirection) * viewDirection);
         float3x3 tangentToWorldMatrix = CreateTangentToWorld(normalWS, worldTangent, 1.0f);
 
-        float2 flowDirection = normalize(_flowDirection);
+        //float2 flowDirection = normalize(_flowDirection);
+        float3 right = cross(normalWS, float3(0.0f, 1.0f, 0.0f));
+        float2 flowDirection = cross(right, normalWS).xz + _flowDirection;
         float4 normal1 = SAMPLE_TEXTURE2D(_waterNormal1, sampler_waterNormal1, uv * WATER_NORMAL_1_SCALE + _Time.y * WATER_NORMAL_1_SPEED * flowDirection);
         normal1.rgb = UnpackNormalmapRGorAG(normal1);
         float4 normal2 = SAMPLE_TEXTURE2D(_waterNormal2, sampler_waterNormal2, uv * WATER_NORMAL_2_SCALE + _Time.y * WATER_NORMAL_2_SPEED * flowDirection);

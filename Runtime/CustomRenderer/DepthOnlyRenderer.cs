@@ -136,6 +136,7 @@ namespace Misaki.ScreenSpaceWetness
 
             renderTarget = new(size, size, 0)
             {
+                name = "Wetness Shadow Map",
                 graphicsFormat = GraphicsFormat.None,
                 depthStencilFormat = GraphicsFormat.D32_SFloat_S8_UInt,
             };

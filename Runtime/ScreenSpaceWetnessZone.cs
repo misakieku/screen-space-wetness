@@ -13,6 +13,7 @@ namespace Misaki.ScreenSpaceWetness
 
         public Vector4 noiseScaleOffset = new(1.0f, 1.0f, 0.0f, 0.0f);
         public Vector2 noiseMinMax = new(0.0f, 1.0f);
+        public Vector2 noiseSlopeMinMax = new(0.9f, 1.0f);
 
         public Vector3 center;
         public Vector2 size = new(15, 15);
@@ -112,7 +113,7 @@ namespace Misaki.ScreenSpaceWetness
             _wetnessMaterial.SetFloat("_intensity", intensity);
 
             _wetnessMaterial.SetVector("_noiseScaleOffset", noiseScaleOffset);
-            _wetnessMaterial.SetVector("_noiseMinMax", noiseMinMax);
+            _wetnessMaterial.SetVector("_noiseParams", new Vector4(noiseMinMax.x, noiseMinMax.y, noiseSlopeMinMax.x, noiseSlopeMinMax.y));
 
             _wetnessMaterial.SetMatrix("_rainMatrix", VP);
             _wetnessMaterial.SetVector("_rainDirection", -depthRenderer.depthOnlyCamera.transform.forward);
